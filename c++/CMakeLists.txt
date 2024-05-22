@@ -2,25 +2,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(MSVC)
-  set(FLAGS "/bigobj /ltcg")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
-else()
-  set(FLAGS "-Wall")
-  set(FLAGS_DEBUG "-g -O0 -fsanitize=address -fsanitize=undefined")
-  set(FLAGS_RELEASE "-O3")
-
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAGS}")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
-
-  set(CMAKE_C_FLAGS_DEBUG   "${FLAGS_DEBUG}")
-  set(CMAKE_CXX_FLAGS_DEBUG "${FLAGS_DEBUG}")
-
-  set(CMAKE_C_FLAGS_RELEASE   "${FLAGS_RELEASE}")
-  set(CMAKE_CXX_FLAGS_RELEASE "${FLAGS_RELEASE}")
-endif()
-
-if(MSVC)
   set(COMPILER_FLAGS "/bigobj")
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMPILER_FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMPILER_FLAGS}")
@@ -46,13 +27,22 @@ else()
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${FLAGS}")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${FLAGS}")
 
-  set(CMAKE_C_FLAGS_DEBUG   "${FLAGS_DEBUG}")
+  set(CMAKE_C_FLAGS_DEBUG "${FLAGS_DEBUG}")
   set(CMAKE_CXX_FLAGS_DEBUG "${FLAGS_DEBUG}")
 
-  set(CMAKE_C_FLAGS_RELEASE   "${FLAGS_RELEASE}")
+  set(CMAKE_C_FLAGS_RELEASE "${FLAGS_RELEASE}")
   set(CMAKE_CXX_FLAGS_RELEASE "${FLAGS_RELEASE}")
 endif()
 
-include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/main/src)
+if(NOT "Debug" STREQUAL "${CMAKE_BUILD_TYPE}")
+  set_property(
+    DIRECTORY
+    APPEND
+    PROPERTY
+    COMPILE_DEFINITIONS NDEBUG)
+endif()
 
+include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/main/inc)
+
+add_subdirectory(example)
 add_subdirectory(test)

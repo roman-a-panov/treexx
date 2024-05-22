@@ -21,7 +21,24 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-#define CATCH_CONFIG_MAIN
+#ifndef TEST_MACRO_HH
+#define TEST_MACRO_HH
 
-#include <catch.hpp>
+#include <type_traits>
+
+#include <test/util/reg_class.hh>
+
+#define TXX_DO_CONCAT_3_(x, y, z) x ## y ## z
+#define TXX_CONCAT_3_(x, y, z) TXX_DO_CONCAT_3_(x, y, z)
+#define TXX_GEN_ID(pref) TXX_CONCAT_3_(pref, __COUNTER__, __LINE__)
+
+#define TXX_SECTION() TXX_SECTION_0_(TXX_GEN_ID(txx_sect_guard_))
+
+#define TXX_TEST_CLASS() \
+  void const* TXX_GEN_ID(txx_reg_test_)() const noexcept \
+  { \
+    using This = typename ::std::decay<decltype(*this)>::type; \
+    return ::test::util::Reg_class<This>::reg(); \
+  }
+
+#endif // TEST_MACRO_HH

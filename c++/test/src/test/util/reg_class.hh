@@ -21,7 +21,46 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-#define CATCH_CONFIG_MAIN
+#ifndef TEST_UTIL_REGCLASS_HH
+#define TEST_UTIL_REGCLASS_HH
 
-#include <catch.hpp>
+#include <memory>
+
+namespace test::util
+{
+
+template<class T>
+struct Reg_class
+{
+  using Test = T;
+
+  static void const* reg() noexcept
+  {
+    return ::std::addressof(registrar_);
+  }
+
+private:
+  struct Registrar
+  {
+    Registrar()
+    {
+      Test::register_test_cases();
+    }
+
+  private:
+    static void run()
+    {
+      Test test;
+      test.run();
+    }
+  };
+
+  static Registrar registrar_;
+};
+
+template<class T>
+typename Reg_class<T>::Registrar Reg_class<T>::registrar_;
+
+} // namespace test::util
+
+#endif // TEST_UTIL_REGCLASS_HH

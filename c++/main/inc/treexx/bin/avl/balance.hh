@@ -21,7 +21,19 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-#define CATCH_CONFIG_MAIN
+#ifndef TREEXX_BIN_AVL_BALANCE_HH
+#define TREEXX_BIN_AVL_BALANCE_HH
 
-#include <catch.hpp>
+namespace treexx::bin::avl
+{
+
+enum class Balance : char unsigned
+{
+  poised = 0u,
+  overright,
+  overleft
+};
+
+} // namespace treexx::bin::avl
+
+#endif // TREEXX_BIN_AVL_BALANCE_HH

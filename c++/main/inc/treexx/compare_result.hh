@@ -21,7 +21,19 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-#define CATCH_CONFIG_MAIN
+#ifndef TREEXX_COMPARERESULT_HH
+#define TREEXX_COMPARERESULT_HH
 
-#include <catch.hpp>
+namespace treexx
+{
+
+enum class Compare_result : char unsigned
+{
+  equal = 0u,
+  greater,
+  less
+};
+
+} // namespace treexx
+
+#endif // TREEXX_COMPARERESULT_HH

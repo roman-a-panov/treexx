@@ -21,7 +21,18 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-#define CATCH_CONFIG_MAIN
+#ifndef TREEXX_UTIL_UTIL_HH
+#define TREEXX_UTIL_UTIL_HH
 
-#include <catch.hpp>
+namespace treexx::util
+{
+
+struct Util
+{
+  template<class T>
+  static T&& ref() noexcept;
+};
+
+}  // namespace treexx::util
+
+#endif // TREEXX_UTIL_UTIL_HH

@@ -21,7 +21,29 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-#define CATCH_CONFIG_MAIN
+#ifndef TEST_TREEXX_UTIL_UTIL_HH
+#define TEST_TREEXX_UTIL_UTIL_HH
 
-#include <catch.hpp>
+#include <treexx/compare_result.hh>
+
+namespace test::treexx::util
+{
+
+struct Util
+{
+  using Compare_result = ::treexx::Compare_result;
+
+  template<class X, class Y>
+  [[nodiscard]] static Compare_result compare(X const& x, Y const& y) noexcept
+  {
+    if(x < y)
+    {
+      return Compare_result::less;
+    }
+    return y < x ? Compare_result::greater : Compare_result::equal;
+  }
+};
+
+} // namespace test::treexx::util
+
+#endif // TEST_TREEXX_UTIL_UTIL_HH

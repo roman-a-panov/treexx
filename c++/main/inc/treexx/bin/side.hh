@@ -21,7 +21,18 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-#define CATCH_CONFIG_MAIN
+#ifndef TREEXX_BIN_SIDE_HH
+#define TREEXX_BIN_SIDE_HH
 
-#include <catch.hpp>
+namespace treexx::bin
+{
+
+enum class Side : char unsigned
+{
+  left = 0u,
+  right
+};
+
+} // namespace treexx::bin
+
+#endif // TREEXX_BIN_SIDE_HH

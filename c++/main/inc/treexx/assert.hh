@@ -21,7 +21,16 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
-#define CATCH_CONFIG_ENABLE_BENCHMARKING
-#define CATCH_CONFIG_MAIN
+#ifndef TREEXX_ASSERT_HH
+#define TREEXX_ASSERT_HH
 
-#include <catch.hpp>
+#ifndef TREEXX_ASSERT
+# if defined(TREEXX_DEBUG) && (0 < TREEXX_DEBUG)
+#   include <cassert>
+#   define TREEXX_ASSERT(...) assert(__VA_ARGS__)
+# else
+# define TREEXX_ASSERT(...)
+# endif
+#endif
+
+#endif // TREEXX_ASSERT_HH
