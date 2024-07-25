@@ -951,7 +951,7 @@ The node being inserted must have been allocated beforehand. If `node_ptr`
 points to a node that is already present in the `tree` the behavior is
 undefined.
 
-> **Note!** Draw attention at the fact that the specified offset is not an
+> **Note!** Draw attention at the fact that the specified `offset` is not an
 > absolute offset. This delivers us from the need to compute the offset and
 > decreases the computation complexity.
 
@@ -1152,7 +1152,7 @@ Logarithmic in the size of the `tree`.
 ### Comparator
 The lookup functions accept comparators. A Comparator is a function object that
 returns an object of type [treexx::Compare_result](#compare_result) or something
-that is implicitly convertible into such object. The comparator is invoked with
+that is implicitly convertible to such object. The comparator is invoked with
 one, two or three arguments depending on the compile-time flags provided to the
 lookup function. These flags are:
 
