@@ -24,4 +24,7 @@ foreach(TARGET IN LISTS TARGETS)
     APPEND
     PROPERTY
     COMPILE_DEFINITIONS $<$<CONFIG:Debug>:TREEXX_DEBUG=1>)
+  target_link_libraries(
+    ${TARGET}
+    treexx)
 endforeach()

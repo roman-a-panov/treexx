@@ -21,4 +21,5 @@ set_property(
 
 target_link_libraries(
   tree++_test
+  treexx
   catch2)

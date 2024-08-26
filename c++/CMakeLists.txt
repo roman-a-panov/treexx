@@ -42,7 +42,6 @@ if(NOT "Debug" STREQUAL "${CMAKE_BUILD_TYPE}")
     COMPILE_DEFINITIONS NDEBUG)
 endif()
 
-include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/main/inc)
-
 add_subdirectory(example)
+add_subdirectory(main)
 add_subdirectory(test)
