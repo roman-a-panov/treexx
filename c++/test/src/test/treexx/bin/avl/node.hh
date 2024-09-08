@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef TEST_TREEXX_BIN_AVL_NODE_HH
 #define TEST_TREEXX_BIN_AVL_NODE_HH
 
+#include <algorithm>
 #include <limits>
 #include <type_traits>
 
@@ -236,6 +237,21 @@ public:
   auto set_xyz_offset(O const& o) noexcept -> typename Enable_if_<e>::Type
   {
     data_.offset = o;
+  }
+
+  void swap_xyz_aux(Node& x) noexcept
+  {
+    if constexpr(has_index_)
+    {
+      ::std::swap(data_.index, x.data_.index);
+    }
+    if constexpr(has_offset_)
+    {
+      ::std::swap(data_.offset, x.data_.offset);
+    }
+
+    ::std::swap(data_.balance, x.data_.balance);
+    ::std::swap(data_.side, x.data_.side);
   }
 
 private:

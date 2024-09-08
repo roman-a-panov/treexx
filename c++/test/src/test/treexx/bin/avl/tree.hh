@@ -209,6 +209,11 @@ public:
     n.template set_xyz_child<side>(c);
   }
 
+  static void swap_aux(Node& x, Node& y) noexcept
+  {
+    x.swap_xyz_aux(y);
+  }
+
 private:
   template<Side side, class Ret, class Self>
   [[nodiscard]] static auto extreme(

@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef TEST_UTIL_RANDOM_UTIL_HH
 #define TEST_UTIL_RANDOM_UTIL_HH
 
+#include <cstdint>
 #include <type_traits>
 
 namespace test::util::random
@@ -37,14 +38,12 @@ struct Util
     auto constexpr a = static_cast<T>(7);
     auto constexpr c = static_cast<T>(771);
     auto constexpr m = static_cast<T>(15098);
-    bool constexpr is_negatable =
-      Is_negatable_<decltype(ref_<Fun>()(ref_<T const&>()))>::value;
 
     auto count = 7548u;
     for(T val = static_cast<T>(3);;)
     {
       T const& val_const = val;
-      if constexpr(is_negatable)
+      if constexpr(Is_negatable_ret_val_<Fun, T const&>::value)
       {
         if(!static_cast<Fun&&>(fun)(val_const))
         {
@@ -67,7 +66,54 @@ struct Util
     }
   }
 
+  template<class Fun>
+  static void gen_56972304(Fun&& fun)
+  {
+    using Is_negatable = Is_negatable_ret_val_<Fun, Unt_64_ const&>;
+
+    Gen_56972304_data_<Is_negatable::value> data;
+    auto const on_lo_word = [&data, &fun](Unt_32_ const lo_word) -> bool
+    {
+      auto val = static_cast<Unt_64_>(data.hi_word);
+      val <<= 32u;
+      val &= 0xffffffff00000000u;
+      val += lo_word;
+      auto const& val_const = val;
+      if constexpr(Is_negatable::value)
+      {
+        if(!static_cast<Fun&&>(fun)(val_const))
+        {
+          data.proceed = false;
+          return false;
+        }
+      }
+      else
+      {
+        static_cast<Fun&&>(fun)(val_const);
+      }
+
+      return true;
+    };
+    auto const on_hi_word = [&data, &on_lo_word](Unt_32_ const hw) -> bool
+    {
+      data.hi_word = hw;
+      gen_7548<Unt_32_>(on_lo_word);
+      if constexpr(Is_negatable::value)
+      {
+        return data.proceed;
+      }
+      else
+      {
+        return true;
+      }
+    };
+    gen_7548<Unt_32_>(on_hi_word);
+  }
+
 private:
+  using Unt_32_ = ::std::uint32_t;
+  using Unt_64_ = ::std::uint64_t;
+
   template<class... T>
   using Void_ = ::std::void_t<T...>;
 
@@ -84,6 +130,29 @@ private:
   struct Is_negatable_<T, Void_<decltype(!ref_<T>() ? 0 : 1)>>
   {
     static bool constexpr value = true;
+  };
+
+  template<class Fun, class... Args>
+  using Is_negatable_ret_val_ =
+    Is_negatable_<decltype(ref_<Fun>()(ref_<Args>()...))>;
+
+  struct Gen_56972304_data_base_
+  {
+    Unt_32_ hi_word;
+  };
+
+  template<bool negatable, int = 0>
+  struct Gen_56972304_data_ : Gen_56972304_data_base_
+  {};
+
+  template<int z>
+  struct Gen_56972304_data_<true, z> : Gen_56972304_data_base_
+  {
+    Gen_56972304_data_() noexcept :
+      proceed(true)
+    {}
+
+    bool proceed;
   };
 };
 

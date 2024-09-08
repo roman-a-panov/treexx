@@ -189,7 +189,7 @@ public:
     Tree&& tree,
     Node<Tree>& node) noexcept -> typename Index_trait_<Tree>::Type
   {
-    return node_index_or_offset<false>(static_cast<Tree&&>(tree), node);
+    return node_index_or_offset_<false>(static_cast<Tree&&>(tree), node);
   }
 
   template<class Tree>
@@ -197,7 +197,7 @@ public:
     Tree&& tree,
     Node<Tree>& node) noexcept -> typename Offset_trait_<Tree>::Type
   {
-    return node_index_or_offset<true>(static_cast<Tree&&>(tree), node);
+    return node_index_or_offset_<true>(static_cast<Tree&&>(tree), node);
   }
 
   template<class Tree>
@@ -237,12 +237,12 @@ public:
     using Node = Tree_algo::Node<Tree>;
     using Node_pointer = Tree_algo::Node_pointer<Tree>;
 
-    bool constexpr has_index = Index_trait_<Tree>::value;
+    bool constexpr has_index(Index_trait_<Tree>::value);
 
     if(spot_ptr)
     {
-      Node* node = static_cast<Tree&&>(tree).address(node_ptr);
-      Node* const spot = static_cast<Tree&&>(tree).address(spot_ptr);
+      Node* node(static_cast<Tree&&>(tree).address(node_ptr));
+      Node* const spot(static_cast<Tree&&>(tree).address(spot_ptr));
       TREEXX_ASSERT(node_ptr);
       TREEXX_ASSERT(node);
       TREEXX_ASSERT(spot);
@@ -251,7 +251,7 @@ public:
         static_cast<Tree&&>(tree).template child<Side::left>(*spot));
       Node_pointer parent_ptr;
       Side side;
-      bool is_leftmost = false;
+      bool is_leftmost(false);
 
       if(left_child_ptr)
       {
@@ -259,7 +259,7 @@ public:
         side = Side::right;
         for(;;)
         {
-          Node* const parent = static_cast<Tree&&>(tree).address(parent_ptr);
+          Node* const parent(static_cast<Tree&&>(tree).address(parent_ptr));
           TREEXX_ASSERT(parent);
           Node_pointer const next_parent_ptr(
             static_cast<Tree&&>(tree).template child<Side::right>(*parent));
@@ -312,8 +312,8 @@ public:
             static_cast<Tree&&>(tree).parent(*node));
           if(next_node_ptr)
           {
-            Node* const next_node =
-              static_cast<Tree&&>(tree).address(next_node_ptr);
+            Node* const next_node(
+              static_cast<Tree&&>(tree).address(next_node_ptr));
             TREEXX_ASSERT(next_node);
             Side const from_side(static_cast<Tree&&>(tree).side(*node));
             node = next_node;
@@ -349,14 +349,14 @@ public:
     using Node = Tree_algo::Node<Tree>;
     using Node_pointer = Tree_algo::Node_pointer<Tree>;
 
-    Node* parent = nullptr;
+    Node* parent(nullptr);
     Node_pointer parent_ptr(static_cast<Tree&&>(tree).root());
     Node_pointer const& parent_ptr_const = parent_ptr;
     Side side = Side::left;
-    bool has_root = parent_ptr_const ? true : false;
-    bool is_rightmost = true;
-    bool is_leftmost = true;
-    bool constexpr has_index = Index_trait_<Tree>::value;
+    bool has_root(parent_ptr_const ? true : false);
+    bool is_rightmost(true);
+    bool is_leftmost(true);
+    bool constexpr has_index(Index_trait_<Tree>::value);
 
     if(has_root)
     {
@@ -399,7 +399,7 @@ public:
 
     Node_pointer const node_ptr =
       static_cast<Create_node&&>(create_node)(parent_ptr, side);
-    Node* const node = static_cast<Tree&&>(tree).address(node_ptr);
+    Node* const node(static_cast<Tree&&>(tree).address(node_ptr));
     TREEXX_ASSERT(node_ptr);
     TREEXX_ASSERT(node);
 
@@ -474,9 +474,9 @@ public:
     Node_pointer parent_ptr = static_cast<Tree&&>(tree).root();
     Index base_idx(make_index_<Tree, 0u>());
     Side side = Side::left;
-    bool const has_root = parent_ptr ? true : false;
-    bool is_rightmost = true;
-    bool is_leftmost = true;
+    bool const has_root(parent_ptr ? true : false);
+    bool is_rightmost(true);
+    bool is_leftmost(true);
     TREEXX_ASSERT(node_ptr);
 
     if(has_root)
@@ -517,7 +517,7 @@ public:
       }
     }
 
-    Node* const node = static_cast<Tree&&>(tree).address(node_ptr);
+    Node* const node(static_cast<Tree&&>(tree).address(node_ptr));
     TREEXX_ASSERT(node);
     static_cast<Tree&&>(tree).set_parent(*node, parent_ptr);
     static_cast<Tree&&>(tree).template set_child<Side::left>(*node, nullptr);
@@ -757,8 +757,8 @@ private:
   {
     using Node_pointer = Tree_algo::Node_pointer<Tree>;
 
-    constexpr bool has_index = Index_trait_<Tree>::value;
-    constexpr bool has_offset = Offset_trait_<Tree>::value;
+    bool constexpr has_index(Index_trait_<Tree>::value);
+    bool constexpr has_offset(Offset_trait_<Tree>::value);
     static_assert(
       Binary_search_type_::any_match == type ||
       Binary_search_type_::lower_bound == type ||
@@ -937,20 +937,20 @@ private:
     using Node = Tree_algo::Node<Tree>;
     using Node_pointer = Tree_algo::Node_pointer<Tree>;
 
-    Side constexpr opp_side = Side::left == side ? Side::right : Side::left;
-    bool constexpr has_offset = Offset_trait_<Tree>::value;
-    bool constexpr has_index = Index_trait_<Tree>::value;
+    Side constexpr opp_side(Side::left == side ? Side::right : Side::left);
+    bool constexpr has_offset(Offset_trait_<Tree>::value);
+    bool constexpr has_index(Index_trait_<Tree>::value);
     static_assert(Side::left == side || Side::right == side);
     static_assert(has_offset || 1u > sizeof...(Offset));
 
-    Node* const node = static_cast<Tree&&>(tree).address(node_ptr);
+    Node* const node(static_cast<Tree&&>(tree).address(node_ptr));
     TREEXX_ASSERT(node_ptr);
     TREEXX_ASSERT(node);
 
     Node_pointer const parent_ptr =
       static_cast<Tree&&>(tree).template extreme<side>();
     Side node_side;
-    bool const has_parent = parent_ptr ? true : false;
+    bool const has_parent(parent_ptr ? true : false);
     if constexpr(Side::left == side)
     {
       node_side = Side::left;
@@ -975,7 +975,7 @@ private:
     {
       if constexpr(has_offset && Side::left == side)
       {
-        Node* const parent = static_cast<Tree&&>(tree).address(parent_ptr);
+        Node* const parent(static_cast<Tree&&>(tree).address(parent_ptr));
         TREEXX_ASSERT(parent);
         static_cast<Tree&&>(tree).set_offset(
           *node, static_cast<Tree&&>(tree).offset(*parent));
@@ -1010,7 +1010,7 @@ private:
             Node_pointer ptr(parent_ptr);
             do
             {
-              Node* const addr = static_cast<Tree&&>(tree).address(ptr);
+              Node* const addr(static_cast<Tree&&>(tree).address(ptr));
               TREEXX_ASSERT(addr);
               static_cast<Tree&&>(tree).increment_index(*addr);
               ptr = static_cast<Tree&&>(tree).parent(*addr);
@@ -1053,22 +1053,22 @@ private:
 
     static_assert(Side::left == side || Side::right == side);
     Side constexpr opp_side = Side::left == side ? Side::right : Side::left;
-    bool constexpr has_offset = Offset_trait_<Tree>::value;
-    bool constexpr has_index = Index_trait_<Tree>::value;
+    bool constexpr has_offset(Offset_trait_<Tree>::value);
+    bool constexpr has_index(Index_trait_<Tree>::value);
 
     Node_pointer const node_ptr =
       static_cast<Tree&&>(tree).template extreme<side>();
-    Node* const node = static_cast<Tree&&>(tree).address(node_ptr);
+    Node* const node(static_cast<Tree&&>(tree).address(node_ptr));
     TREEXX_ASSERT(node_ptr);
     TREEXX_ASSERT(node);
     Node_pointer const parent_ptr = static_cast<Tree&&>(tree).parent(*node);
     Node_pointer const child_ptr =
       static_cast<Tree&&>(tree).template child<opp_side>(*node);
-    bool const has_parent = parent_ptr ? true : false;
+    bool const has_parent(parent_ptr ? true : false);
 
     if(child_ptr)
     {
-      Node* const child = static_cast<Tree&&>(tree).address(child_ptr);
+      Node* const child(static_cast<Tree&&>(tree).address(child_ptr));
       TREEXX_ASSERT(child);
       static_cast<Tree&&>(tree).template set_extreme<side>(child_ptr);
       static_cast<Tree&&>(tree).set_parent(*child, parent_ptr);
@@ -1104,7 +1104,7 @@ private:
 
     if(has_parent)
     {
-      Node* const parent = static_cast<Tree&&>(tree).address(parent_ptr);
+      Node* const parent(static_cast<Tree&&>(tree).address(parent_ptr));
       TREEXX_ASSERT(parent);
       static_cast<Tree&&>(tree).template set_child<side>(*parent, child_ptr);
       if constexpr(Side::left == side && has_index)
@@ -1147,15 +1147,15 @@ private:
     using Node = Tree_algo::Node<Tree>;
     using Offset = Tree_algo::Offset<Tree>;
 
-    bool constexpr has_index = Index_trait_<Tree>::value;
+    bool constexpr has_index(Index_trait_<Tree>::value);
     TREEXX_ASSERT(node_ptr);
 
     Node_pointer parent_ptr(static_cast<Tree&&>(tree).root());
     Offset base_offset(make_offset_<Tree, 0u>());
     Side side = Side::left;
-    bool const has_root = parent_ptr ? true : false;
-    bool is_rightmost = true;
-    bool is_leftmost = true;
+    bool const has_root(parent_ptr ? true : false);
+    bool is_rightmost(true);
+    bool is_leftmost(true);
 
     if(has_root)
     {
@@ -1207,7 +1207,7 @@ private:
       }
     }
 
-    Node* const node = static_cast<Tree&&>(tree).address(node_ptr);
+    Node* const node(static_cast<Tree&&>(tree).address(node_ptr));
     Offset const node_offset(offset - base_offset);
     TREEXX_ASSERT(node);
     static_cast<Tree&&>(tree).set_parent(*node, parent_ptr);
@@ -1258,8 +1258,8 @@ private:
     using Index_trait = Index_trait_<Tree>;
     using Offset_trait = Offset_trait_<Tree>;
 
-    bool constexpr has_index = Index_trait::value;
-    bool constexpr has_offset = Offset_trait::value;
+    bool constexpr has_index(Index_trait::value);
+    bool constexpr has_offset(Offset_trait::value);
     static_assert(!with_shift || has_offset);
 
     struct Data : Erase_base_<Tree, has_offset, with_shift>
@@ -1275,7 +1275,7 @@ private:
       bool attach;
     };
 
-    Node* const node = static_cast<Tree&&>(tree).address(node_ptr);
+    Node* const node(static_cast<Tree&&>(tree).address(node_ptr));
     TREEXX_ASSERT(node_ptr);
     TREEXX_ASSERT(node);
 
@@ -1290,8 +1290,8 @@ private:
         adjacent_node<Side::left>(static_cast<Tree&&>(tree), *node));
     }
 
-    Node* parent = nullptr;
-    Node* attach_node = nullptr;
+    Node* parent(nullptr);
+    Node* attach_node(nullptr);
     Node_pointer attach_node_ptr(nullptr);
     Node_pointer parent_ptr = static_cast<Tree&&>(tree).parent(*node);
     Node_pointer fixup_node_ptr(parent_ptr);
@@ -1314,15 +1314,15 @@ private:
 
       if(right_child_ptr)
       {
-        Node* const right_child =
-          static_cast<Tree&&>(tree).address(right_child_ptr);
+        Node* const right_child(
+          static_cast<Tree&&>(tree).address(right_child_ptr));
         TREEXX_ASSERT(right_child);
         Node_pointer left_grandchild_ptr =
           static_cast<Tree&&>(tree).template child<Side::left>(*right_child);
         Node* transplant_node;
         Node_pointer transplant_node_ptr;
         Balance const balance(static_cast<Tree&&>(tree).balance(*node));
-        bool has_left_grandchild = left_grandchild_ptr ? true : false;
+        bool const has_left_grandchild(left_grandchild_ptr ? true : false);
 
         if(has_left_grandchild)
         {
@@ -1344,8 +1344,8 @@ private:
               ++data.node_to_shift_count;
             }
 
-            Node* const left_grandchild =
-              static_cast<Tree&&>(tree).address(left_grandchild_ptr);
+            Node* const left_grandchild(
+              static_cast<Tree&&>(tree).address(left_grandchild_ptr));
             TREEXX_ASSERT(left_grandchild);
             Node_pointer const next_left_grandchild_ptr =
               static_cast<Tree&&>(
@@ -1365,8 +1365,8 @@ private:
               template set_child<Side::left>(*prev_node, right_grandchild_ptr);
             if(right_grandchild_ptr)
             {
-              Node* const right_grandchild =
-                static_cast<Tree&&>(tree).address(right_grandchild_ptr);
+              Node* const right_grandchild(
+                static_cast<Tree&&>(tree).address(right_grandchild_ptr));
               TREEXX_ASSERT(right_grandchild);
               static_cast<Tree&&>(
                 tree).set_parent(*right_grandchild, prev_node_ptr);
@@ -1458,7 +1458,7 @@ private:
           parent = static_cast<Tree&&>(tree).address(parent_ptr);
           TREEXX_ASSERT(parent);
           static_cast<Tree&&>(tree).set_parent(*transplant_node, parent_ptr);
-          set_child_(
+          set_child(
             static_cast<Tree&&>(tree),
             *parent,
             transplant_node_ptr,
@@ -1480,8 +1480,8 @@ private:
     }
     else if(right_child_ptr)
     {
-      Node* const right_child =
-        static_cast<Tree&&>(tree).address(right_child_ptr);
+      Node* const right_child(
+        static_cast<Tree&&>(tree).address(right_child_ptr));
       TREEXX_ASSERT(right_child);
       attach_node = right_child;
       attach_node_ptr = right_child_ptr;
@@ -1524,7 +1524,7 @@ private:
           static_cast<Tree&&>(tree).set_side(*attach_node, data.side);
         }
 
-        set_child_(
+        set_child(
           static_cast<Tree&&>(tree),
           *parent, attach_node_ptr, data.side);
       }
@@ -1627,9 +1627,9 @@ private:
     TREEXX_ASSERT(node_ptr);
     TREEXX_ASSERT(child_ptr);
     TREEXX_ASSERT(Side::left == side || Side::right == side);
-    Node* const node = static_cast<Tree&&>(tree).address(node_ptr);
+    Node* const node(static_cast<Tree&&>(tree).address(node_ptr));
     TREEXX_ASSERT(node);
-    set_child_(static_cast<Tree&&>(tree), *node, child_ptr, side);
+    set_child(static_cast<Tree&&>(tree), *node, child_ptr, side);
     Balance const balance(static_cast<Tree&&>(tree).balance(*node));
     switch(balance)
     {
@@ -1670,7 +1670,7 @@ private:
     using Node_pointer = Tree_algo::Node_pointer<Tree>;
 
     Node_pointer const& node_ptr_const = node_ptr;
-    Node* node = static_cast<Tree&&>(tree).address(node_ptr_const);
+    Node* node(static_cast<Tree&&>(tree).address(node_ptr_const));
     TREEXX_ASSERT(node_ptr_const);
     TREEXX_ASSERT(node);
 
@@ -1683,11 +1683,11 @@ private:
       }
 
       Node_pointer const& parent_ptr_const = parent_ptr;
-      Node* const parent = static_cast<Tree&&>(tree).address(parent_ptr_const);
+      Node* const parent(static_cast<Tree&&>(tree).address(parent_ptr_const));
       TREEXX_ASSERT(parent);
       Balance const parent_balance(static_cast<Tree&&>(tree).balance(*parent));
       Side const side(static_cast<Tree&&>(tree).side(*node));
-      bool fix_up_left = false, fix_up_right = false;
+      bool fix_up_left(false), fix_up_right(false);
 
       switch(side)
       {
@@ -1749,7 +1749,7 @@ private:
               static_cast<Tree&&>(tree).template child<Side::right>(*node);
             if(child_ptr)
             {
-              Node* const child = static_cast<Tree&&>(tree).address(child_ptr);
+              Node* const child(static_cast<Tree&&>(tree).address(child_ptr));
               TREEXX_ASSERT(child);
               Balance const child_balance(
                 static_cast<Tree&&>(tree).balance(*child));
@@ -1809,7 +1809,7 @@ private:
               template child<Side::left>(*node);
             if(child_ptr)
             {
-              Node* const child = static_cast<Tree&&>(tree).address(child_ptr);
+              Node* const child(static_cast<Tree&&>(tree).address(child_ptr));
               TREEXX_ASSERT(child);
               Balance const child_balance(
                 static_cast<Tree&&>(tree).balance(*child));
@@ -1893,13 +1893,13 @@ private:
     using Node_pointer = Tree_algo::Node_pointer<Tree>;
 
     static_assert(Side::left == side || Side::right == side);
-    Node* const node = static_cast<Tree&&>(tree).address(node_ptr);
+    Node* const node(static_cast<Tree&&>(tree).address(node_ptr));
     TREEXX_ASSERT(node_ptr);
     TREEXX_ASSERT(node);
 
     Balance const balance(static_cast<Tree&&>(tree).balance(*node));
-    Balance new_balance = Balance::poised;
-    bool rotate = false;
+    Balance new_balance(Balance::poised);
+    bool rotate(false);
     switch(balance)
     {
     case Balance::overleft:
@@ -1938,14 +1938,14 @@ private:
     Side constexpr opp_side = Side::left == side ? Side::right : Side::left;
     Node_pointer const child_ptr =
       static_cast<Tree&&>(tree).template child<opp_side>(*node);
-    Node* const child = static_cast<Tree&&>(tree).address(child_ptr);
-    Node* ret = nullptr;
+    Node* const child(static_cast<Tree&&>(tree).address(child_ptr));
+    Node* ret(nullptr);
     TREEXX_ASSERT(child_ptr);
     TREEXX_ASSERT(child);
 
     Balance const child_balance(static_cast<Tree&&>(tree).balance(*child));
     Balance child_new_balance = Balance::poised;
-    bool rotate_twice = false;
+    bool rotate_twice(false);
     switch(child_balance)
     {
     case Balance::overleft:
@@ -1981,8 +1981,7 @@ private:
     {
       Node_pointer const grandchild_ptr =
         static_cast<Tree&&>(tree).template child<side>(*child);
-      Node* const grandchild =
-        static_cast<Tree&&>(tree).address(grandchild_ptr);
+      Node* const grandchild(static_cast<Tree&&>(tree).address(grandchild_ptr));
       TREEXX_ASSERT(grandchild_ptr);
       TREEXX_ASSERT(grandchild);
 
@@ -2043,13 +2042,13 @@ private:
 
     static_assert(Side::left == side || Side::right == side);
     Side constexpr opp_side = Side::left == side ? Side::right : Side::left;
-    Node* const node = static_cast<Tree&&>(tree).address(node_ptr);
+    Node* const node(static_cast<Tree&&>(tree).address(node_ptr));
     TREEXX_ASSERT(node_ptr);
     TREEXX_ASSERT(node);
     Node_pointer const parent_ptr(static_cast<Tree&&>(tree).parent(*node));
     Node_pointer const child_ptr(
       static_cast<Tree&&>(tree).template child<opp_side>(*node));
-    Node* const child = static_cast<Tree&&>(tree).address(child_ptr);
+    Node* const child(static_cast<Tree&&>(tree).address(child_ptr));
     TREEXX_ASSERT(child);
     Node_pointer const grandchild_ptr(
       static_cast<Tree&&>(tree).template child<side>(*child));
@@ -2061,8 +2060,7 @@ private:
     static_cast<Tree&&>(tree).set_side(*node, side);
     if(grandchild_ptr)
     {
-      Node* const grandchild =
-        static_cast<Tree&&>(tree).address(grandchild_ptr);
+      Node* const grandchild(static_cast<Tree&&>(tree).address(grandchild_ptr));
       TREEXX_ASSERT(grandchild);
       static_cast<Tree&&>(tree).set_parent(*grandchild, node_ptr);
       static_cast<Tree&&>(tree).set_side(*grandchild, opp_side);
@@ -2072,7 +2070,7 @@ private:
     static_cast<Tree&&>(tree).set_side(*child, subtree_side);
     if(parent_ptr)
     {
-      Node* const parent = static_cast<Tree&&>(tree).address(parent_ptr);
+      Node* const parent(static_cast<Tree&&>(tree).address(parent_ptr));
       TREEXX_ASSERT(parent);
       switch(subtree_side)
       {
@@ -2123,28 +2121,10 @@ private:
     }
   }
 
-  template<class Tree>
-  static void set_child_(
-    Tree&& tree,
-    Node<Tree>& node,
-    Node_pointer<Tree> const& child_ptr,
-    Side const side) noexcept
-  {
-    if(Side::left == side)
-    {
-      static_cast<Tree&&>(tree).template set_child<Side::left>(node, child_ptr);
-    }
-    else
-    {
-      TREEXX_ASSERT(Side::right == side);
-      static_cast<Tree&&>(tree).template set_child<Side::right>(node, child_ptr);
-    }
-  }
-
   template<
     bool is_offset,
     class Tree, class = typename Enable_if_<!is_offset>::Type>
-  [[nodiscard]] static decltype(auto) index_or_offset(
+  [[nodiscard]] static decltype(auto) index_or_offset_(
     Tree&& tree,
     Node<Tree>& node) noexcept
   {
@@ -2154,7 +2134,7 @@ private:
   template<
     bool is_offset, int = 0,
     class Tree, class = typename Enable_if_<is_offset>::Type>
-  [[nodiscard]] static decltype(auto) index_or_offset(
+  [[nodiscard]] static decltype(auto) index_or_offset_(
     Tree&& tree,
     Node<Tree>& node) noexcept
   {
@@ -2162,7 +2142,7 @@ private:
   }
 
   template<bool is_offset, class Tree>
-  [[nodiscard]] static auto node_index_or_offset(
+  [[nodiscard]] static auto node_index_or_offset_(
     Tree&& tree,
     Node<Tree>& node) noexcept -> Index_or_offset_<Tree, is_offset>
   {
@@ -2171,13 +2151,13 @@ private:
 
     Node* node_addr = ::std::addressof(node);
     Index_or_offset result(
-      index_or_offset<is_offset>(static_cast<Tree&&>(tree), node));
+      index_or_offset_<is_offset>(static_cast<Tree&&>(tree), node));
     for(;;)
     {
       auto const parent_ptr = static_cast<Tree&&>(tree).parent(*node_addr);
       if(parent_ptr)
       {
-        Node* const parent_addr = static_cast<Tree&&>(tree).address(parent_ptr);
+        Node* const parent_addr(static_cast<Tree&&>(tree).address(parent_ptr));
         TREEXX_ASSERT(parent_addr);
         if(Side::right == static_cast<Tree&&>(tree).side(*node_addr))
         {

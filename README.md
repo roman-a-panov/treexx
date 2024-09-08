@@ -512,6 +512,31 @@ struct Tree
 ```
 These methods might be `static`, but this is not mandated.
 
+### Method to swap auxiliary information stored in Node
+The `swap_aux()` method is meant to swap auxiliary information stored in two
+tree nodes. The information includes balance, side and optionally stored index
+and offset if the tree is indexed or an offset tree respectively.
+
+**Example**
+```c++
+#include <algorithm>
+
+template<class Value>
+struct Tree
+{
+  void swap_aux(My_node<Value>& node_x, My_node<Value>& node_y) noexcept
+  {
+    std::swap(node_x.balance, node_y.balance);
+    std::swap(node_x.side, node_y.side);
+    std::swap(node_x.index, node_y.index); // For indexed tree.
+    std::swap(node_x.offset, node_y.offset); // For offset tree.
+  }
+};
+```
+This method is only needed for the nodes swapping functionality, see
+[Swapping nodes](#swapping-nodes). Other algorithms do not require this method
+to be implemented. This method might be `static`, but this is not mandated.
+
 ## Making the Tree indexed
 ### Defining `Index` type
 To make the tree indexed you have to define `Index` type inside your tree
@@ -771,6 +796,7 @@ of the [tree class](#tree-class) to obtain addresses of nodes.
 * [Lookup](#lookup)
 * [Node Queries](#node-queries)
 * [Navigation](#navigation)
+* [Swapping nodes](#swapping-nodes)
 
 ## Insertion
 * [Lookup and insert](#lookup-and-insert)
@@ -866,13 +892,15 @@ void treexx::bin::avl::Tree_algo::insert(
 > Applicable only if the `tree` is **not** an offset tree.
 
 Inserts the node pointed to by `node_ptr` right before the node pointed to
-by `spot_ptr`. The later one must be present in the `tree`, otherwise the
-behavior is undefined. The node being inserted must have been allocated
-beforehand. If `node_ptr` points to a node that is already present in the
-`tree` the behavior is undefined.
+by `spot_ptr`. The later one must either be present in the `tree` or be null,
+otherwise the behavior is undefined. If `spot_ptr` is null the node pointed to
+by `node_ptr` is placed at the rightmost position in the `tree`. The node being
+inserted must have been allocated beforehand. If `node_ptr` points to a node
+that is already present in the `tree` the behavior is undefined.
 
 **Complexity**  
-Logarithmic in the size of the `tree`.
+Amortized constant if the `tree` is not indexed. Logarithmic in the size of the
+`tree` in the worst case.
 
 ### Insert at index
 Defined in header `<treexx/bin/avl/tree_algo.hh>`
@@ -921,6 +949,9 @@ is undefined. If a node with the specified `offset` is already present in the
 previously resided at the `offset` (as well as all the nodes to the right of
 it) will be right-shifted by the value of `shift`. Otherwise, the behavior is
 undefined.
+
+**Complexity**  
+Logarithmic in the size of the `tree`.
 
 ### Push back
 Defined in header `<treexx/bin/avl/tree_algo.hh>`
@@ -1007,7 +1038,8 @@ If `node_ptr` points to a node that is already present in the `tree` the behavio
 is undefined.
 
 **Complexity**  
-Amortized constant. Logarithmic in the size of the `tree` in the worst case.
+Amortized constant if the `tree` is not indexed. Logarithmic in the size of the
+`tree` in the worst case.
 
 ## Erasure
 * [Erase](#erase)
@@ -1026,7 +1058,8 @@ Erases the node pointed to by `node_ptr`. The node must be present in the
 `tree`, otherwise the behavior is undefined.
 
 **Complexity**  
-Amortized constant. Logarithmic in the size of the `tree` in the worst case.
+Amortized constant if the `tree` is not indexed and not an offset tree.
+Logarithmic in the size of the `tree` in the worst case.
 
 ### Pop back
 Defined in header `<treexx/bin/avl/tree_algo.hh>`
@@ -1052,7 +1085,8 @@ Erases the leftmost node from the `tree` and returns a pointer to that node.
 If the `tree` is empty the behavior is undefined.
 
 **Complexity**  
-Amortized constant. Logarithmic in the size of the `tree` in the worst case.
+Amortized constant if the `tree` is not indexed and not an offset tree.
+Logarithmic in the size of the `tree` in the worst case.
 
 ## Cleanup
 Defined in header `<treexx/bin/tree_algo.hh>`
@@ -1399,7 +1433,7 @@ void treexx::bin::Tree_algo::for_each(
   Fun&& fun);
 ```
 Visits each node of the `tree` in ascending order (i.e. from left to right) and
-invokes the `fun` function object with a reference to the visited node. 
+invokes the `fun` function object with a reference to the visited node.
 ```c++
 template<class Tree, class Fun>
 void treexx::bin::Tree_algo::for_each_backward(
@@ -1407,7 +1441,26 @@ void treexx::bin::Tree_algo::for_each_backward(
   Fun&& fun);
 ```
 Visits each node of the `tree` in descending order (i.e. from right to left) and
-invokes the `fun` function object with a reference to the visited node. 
+invokes the `fun` function object with a reference to the visited node.
 
 **Complexity**  
 Linear in the size of the `tree`.
+
+## Swapping nodes
+This function can be applied not only to an AVL, but to any binary tree,
+therefore it is placed inside the class `treexx::bin::Tree_algo`.
+
+Defined in header `<treexx/bin/tree_algo.hh>`
+```c++
+template<class Tree>
+void swap(
+  Tree&& tree,
+  Node_pointer<Tree> const& node_x_ptr,
+  Node_pointer<Tree> const& node_y_ptr) noexcept;
+```
+Swaps two nodes of the `tree`. `node_x_ptr` and `node_y_ptr` must be present in
+the `tree` and must not be null. If any of these conditions is not satisfied
+the behavior is undefined.
+
+**Complexity**  
+Constant.

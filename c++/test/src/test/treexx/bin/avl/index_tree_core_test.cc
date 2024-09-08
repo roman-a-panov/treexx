@@ -21,6 +21,7 @@ IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 */
 
+#include <algorithm>
 #include <cstddef>
 #include <deque>
 #include <memory>
@@ -49,6 +50,7 @@ class Index_tree_core_test
   using Compare_result_ = ::treexx::Compare_result;
   using Tree_algo_ = ::treexx::bin::avl::Tree_algo;
   using Util_ = ::test::treexx::bin::avl::util::Util;
+  using Random_util_ = ::test::util::random::Util;
 
   template<class T>
   using Decay_ = typename ::std::decay<T>::type;
@@ -73,6 +75,7 @@ protected:
   using Size = ::std::size_t;
   using Ptrdiff = ::std::ptrdiff_t;
   using Int_32 = ::std::int32_t;
+  using Unt_64 = ::std::uint64_t;
 
   template<class... T>
   using Set = ::std::set<T...>;
@@ -112,6 +115,16 @@ protected:
     [[nodiscard]] Node_const_pointer at(Index const& idx) const noexcept
     {
       return Tree_algo_::at_index(core_, idx);
+    }
+
+    [[nodiscard]] Value const& back() const noexcept
+    {
+      return extreme_<Side_::right>();
+    }
+
+    [[nodiscard]] Value const& front() const noexcept
+    {
+      return extreme_<Side_::left>();
     }
 
     void verify() const
@@ -197,6 +210,42 @@ protected:
       return inserted;
     }
 
+    void swap(Index const& i, Index const& j)
+    {
+      auto const size = this->size();
+      if(size > i)
+      {
+        if(size > j)
+        {
+          auto const node_i_ptr = Tree_algo_::at_index(core_, i);
+          auto const node_j_ptr = Tree_algo_::at_index(core_, j);
+          if(node_i_ptr)
+          {
+            if(node_j_ptr)
+            {
+              Tree_algo_::swap(core_, node_i_ptr, node_j_ptr);
+            }
+            else
+            {
+              CHECK(false);
+            }
+          }
+          else
+          {
+            CHECK(false);
+          }
+        }
+        else
+        {
+          CHECK(false);
+        }
+      }
+      else
+      {
+        CHECK(false);
+      }
+    }
+
     [[nodiscard]] static Node const* address(
       Node_const_pointer const& node_ptr) noexcept
     {
@@ -205,6 +254,16 @@ protected:
 
   private:
     using Core_ = Tree_core_<Value, Index>;
+
+    template<Side_ side>
+    [[nodiscard]] Value const& extreme_() const noexcept
+    {
+      auto const ptr(core_.template extreme<side>());
+      REQUIRE(ptr);
+      auto const* const addr(ptr.xyz_address());
+      REQUIRE(addr);
+      return addr->value();
+    }
 
     template<Side_ side, class... T>
     Value& emplace_(T&&... x)
@@ -258,7 +317,8 @@ protected:
   {
     using Index = typename Decay_<Tree>::Index;
 
-    CHECK(values.size() == tree.size());
+    auto const size = values.size();
+    CHECK(size == tree.size());
     Index idx = 0u;
     for(auto const& x: values)
     {
@@ -271,12 +331,24 @@ protected:
         CHECK(x == node->value());
       }
     }
+
+    if(0u < size)
+    {
+      CHECK(*values.crbegin() == tree.back());
+      CHECK(*values.cbegin() == tree.front());
+    }
   }
 
   template<class T, class Fun>
   static void gen_7548(Fun&& fun)
   {
-    ::test::util::random::Util::gen_7548<T>(static_cast<Fun&&>(fun));
+    Random_util_::gen_7548<T>(static_cast<Fun&&>(fun));
+  }
+
+  template<class Fun>
+  static void gen_56972304(Fun&& fun)
+  {
+    Random_util_::gen_56972304(static_cast<Fun&&>(fun));
   }
 };
 
@@ -630,6 +702,75 @@ TEST_CASE_METHOD(
 
   CHECK(deq.empty());
   CHECK(tree.empty());
+}
+
+TEST_CASE_METHOD(
+  Index_tree_core_test,
+  "Index AVL tree core: swap nodes",
+  "[tree++][treexx][bin][avl][algo][index][swap]")
+{
+  using Value = Unt_64;
+  using Tree = Tree<Value>;
+  using Vector = Vector<Value>;
+
+  Tree tree;
+  Vector vec;
+  Size const size = GENERATE(
+    2000005u,
+    4u, 7u, 18u, 32u, 58u, 128u, 138u, 177u, 201u, 345u, 380u, 401u, 408u);
+  auto const verify = [&vec, &tree]
+  {
+    expect_match(vec, tree);
+    tree.verify();
+  };
+  auto const swap = [&vec, &tree, &verify](auto const& i, auto const& j)
+  {
+    if(i != j)
+    {
+      ::std::swap(vec[i], vec[j]);
+    }
+    tree.swap(i, j);
+    verify();
+  };
+
+  vec.reserve(size);
+  gen_56972304(
+    [&vec, &tree, size](Value const& val) -> bool
+    {
+      vec.emplace_back(val);
+      tree.emplace_back(val);
+      return vec.size() < size;
+    });
+
+  REQUIRE(size == vec.size());
+  REQUIRE(size == tree.size());
+  verify();
+
+  if(2u < size)
+  {
+    swap(1u, 2u);
+  }
+
+  if(0x200u > size)
+  {
+    for(Size i = 0u; size > i; ++i)
+    {
+      for(Size j = 0u; size > j; ++j)
+      {
+        swap(i, j);
+      }
+    }
+  }
+  else
+  {
+    swap(0u, 0u);
+    swap(0u, size - 1u);
+    swap(0u, size - 37u);
+    swap(0u, size / 2u);
+    swap(0u, size / 15u);
+    swap(5u, size / 3u);
+    swap(5u, size * 2u / 3u);
+  }
 }
 
 } // namespace test::treexx::bin::avl

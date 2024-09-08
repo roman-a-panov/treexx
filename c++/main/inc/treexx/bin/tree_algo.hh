@@ -24,6 +24,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifndef TREEXX_BIN_TREEALGO_HH
 #define TREEXX_BIN_TREEALGO_HH
 
+#include <memory>
 #include <type_traits>
 
 #include <treexx/assert.hh>
@@ -214,7 +215,7 @@ public:
           Node_pointer const node_to_destroy_ptr(node_ptr);
           Node_pointer const parent_ptr(
             static_cast<Tree&&>(tree).parent(*node));
-          bool const has_parent = parent_ptr ? true : false;
+          bool const has_parent(parent_ptr ? true : false);
           if(has_parent)
           {
             Side const side(static_cast<Tree&&>(tree).side(*node));
@@ -241,6 +242,204 @@ public:
     }
   }
 
+  template<class Tree>
+  static void swap(
+    Tree&& tree,
+    Node_pointer<Tree> const& node_x_ptr,
+    Node_pointer<Tree> const& node_y_ptr) noexcept
+  {
+    using Node = Tree_algo::Node<Tree>;
+    using Node_pointer = Tree_algo::Node_pointer<Tree>;
+
+    TREEXX_ASSERT(node_x_ptr);
+    TREEXX_ASSERT(node_y_ptr);
+    if(node_x_ptr == node_y_ptr)
+    {
+      return;
+    }
+
+    Node* const node_x(static_cast<Tree&&>(tree).address(node_x_ptr));
+    Node* const node_y(static_cast<Tree&&>(tree).address(node_y_ptr));
+    TREEXX_ASSERT(node_x);
+    TREEXX_ASSERT(node_y);
+
+    Node_pointer const* const new_leftmost_ptr(swapped_extreme_<Side::left>(
+      static_cast<Tree&&>(tree), node_x_ptr, node_y_ptr));
+    Node_pointer const* const new_rightmost_ptr(swapped_extreme_<Side::right>(
+      static_cast<Tree&&>(tree), node_x_ptr, node_y_ptr));
+    Node_pointer const* new_root_ptr = nullptr;
+    {
+      Node_pointer const root_ptr(static_cast<Tree&&>(tree).root());
+      if(node_x_ptr == root_ptr)
+      {
+        new_root_ptr = ::std::addressof(node_y_ptr);
+      }
+      else if(node_y_ptr == root_ptr)
+      {
+        new_root_ptr = ::std::addressof(node_x_ptr);
+      }
+    }
+
+    Node_pointer parent_x_ptr(static_cast<Tree&&>(tree).parent(*node_x));
+    Node_pointer parent_y_ptr(static_cast<Tree&&>(tree).parent(*node_y));
+
+    Node* child(nullptr);
+    Node* parent(nullptr);
+    Node_pointer const* child_ptr(nullptr);
+    Node_pointer const* parent_ptr(nullptr);
+    Node_pointer const* grandparent_ptr(nullptr);
+    if(node_x_ptr == parent_y_ptr)
+    {
+      child = node_y;
+      parent = node_x;
+      child_ptr = ::std::addressof(node_y_ptr);
+      parent_ptr = ::std::addressof(node_x_ptr);
+      grandparent_ptr = ::std::addressof(parent_x_ptr);
+    }
+    else if (node_y_ptr == parent_x_ptr)
+    {
+      child = node_x;
+      parent = node_y;
+      child_ptr = ::std::addressof(node_x_ptr);
+      parent_ptr = ::std::addressof(node_y_ptr);
+      grandparent_ptr = ::std::addressof(parent_y_ptr);
+    }
+
+    if(child)
+    {
+      TREEXX_ASSERT(parent);
+      TREEXX_ASSERT(child_ptr);
+      TREEXX_ASSERT(parent_ptr);
+      TREEXX_ASSERT(grandparent_ptr);
+      swap_parent_child_(
+        static_cast<Tree&&>(tree),
+        *child, *parent, *child_ptr, *parent_ptr, *grandparent_ptr);
+    }
+    else
+    {
+      Node* parent_x(nullptr);
+      Node* parent_y(nullptr);
+      Node* left_child_x(nullptr);
+      Node* left_child_y(nullptr);
+      Node* right_child_x(nullptr);
+      Node* right_child_y(nullptr);
+      Node_pointer const left_child_x_ptr(
+        static_cast<Tree&&>(tree).template child<Side::left>(*node_x));
+      Node_pointer const left_child_y_ptr(
+        static_cast<Tree&&>(tree).template child<Side::left>(*node_y));
+      Node_pointer const right_child_x_ptr(
+        static_cast<Tree&&>(tree).template child<Side::right>(*node_x));
+      Node_pointer const right_child_y_ptr(
+        static_cast<Tree&&>(tree).template child<Side::right>(*node_y));
+      Side const side_x(static_cast<Tree&&>(tree).side(*node_x));
+      Side const side_y(static_cast<Tree&&>(tree).side(*node_y));
+      if(parent_x_ptr)
+      {
+        parent_x = static_cast<Tree&&>(tree).address(parent_x_ptr);
+        TREEXX_ASSERT(parent_x);
+      }
+      if(parent_y_ptr)
+      {
+        parent_y = static_cast<Tree&&>(tree).address(parent_y_ptr);
+        TREEXX_ASSERT(parent_y);
+      }
+      if(left_child_x_ptr)
+      {
+        left_child_x = static_cast<Tree&&>(tree).address(left_child_x_ptr);
+        TREEXX_ASSERT(left_child_x);
+      }
+      if(left_child_y_ptr)
+      {
+        left_child_y = static_cast<Tree&&>(tree).address(left_child_y_ptr);
+        TREEXX_ASSERT(left_child_y);
+      }
+      if(right_child_x_ptr)
+      {
+        right_child_x = static_cast<Tree&&>(tree).address(right_child_x_ptr);
+        TREEXX_ASSERT(right_child_x);
+      }
+      if(right_child_y_ptr)
+      {
+        right_child_y = static_cast<Tree&&>(tree).address(right_child_y_ptr);
+        TREEXX_ASSERT(right_child_y);
+      }
+
+      static_cast<Tree&&>(tree).set_parent(*node_y, parent_x_ptr);
+      static_cast<Tree&&>(tree).template set_child<Side::left>(
+        *node_y, left_child_x_ptr);
+      static_cast<Tree&&>(tree).template set_child<Side::right>(
+        *node_y, right_child_x_ptr);
+      if(parent_x)
+      {
+        set_child(static_cast<Tree&&>(tree), *parent_x, node_y_ptr, side_x);
+      }
+      if(left_child_x)
+      {
+        static_cast<Tree&&>(tree).set_parent(*left_child_x, node_y_ptr);
+      }
+      if(right_child_x)
+      {
+        static_cast<Tree&&>(tree).set_parent(*right_child_x, node_y_ptr);
+      }
+
+      static_cast<Tree&&>(tree).set_parent(*node_x, parent_y_ptr);
+      static_cast<Tree&&>(tree).template set_child<Side::left>(
+        *node_x, left_child_y_ptr);
+      static_cast<Tree&&>(tree).template set_child<Side::right>(
+        *node_x, right_child_y_ptr);
+      if(parent_y)
+      {
+        set_child(static_cast<Tree&&>(tree), *parent_y, node_x_ptr, side_y);
+      }
+      if(left_child_y)
+      {
+        static_cast<Tree&&>(tree).set_parent(*left_child_y, node_x_ptr);
+      }
+      if(right_child_y)
+      {
+        static_cast<Tree&&>(tree).set_parent(*right_child_y, node_x_ptr);
+      }
+    }
+
+    static_cast<Tree&&>(tree).swap_aux(*node_x, *node_y);
+
+    if(new_root_ptr)
+    {
+      static_cast<Tree&&>(tree).set_root(*new_root_ptr);
+    }
+    if(new_rightmost_ptr)
+    {
+      static_cast<Tree&&>(tree).
+        template set_extreme<Side::right>(*new_rightmost_ptr);
+    }
+    if(new_leftmost_ptr)
+    {
+      static_cast<Tree&&>(tree).
+        template set_extreme<Side::left>(*new_leftmost_ptr);
+    }
+  }
+
+protected:
+  template<class Tree>
+  static void set_child(
+    Tree&& tree,
+    Node<Tree>& parent,
+    Node_pointer<Tree> const& child_ptr,
+    Side const side) noexcept
+  {
+    if(Side::left == side)
+    {
+      static_cast<Tree&&>(tree).
+        template set_child<Side::left>(parent, child_ptr);
+    }
+    else
+    {
+      TREEXX_ASSERT(Side::right == side);
+      static_cast<Tree&&>(tree).
+        template set_child<Side::right>(parent, child_ptr);
+    }
+  }
+
 private:
   template<Side direction, class Tree, class Fun>
   static void for_each_(Tree&& tree, Fun&& fun)
@@ -260,6 +459,120 @@ private:
       static_cast<Fun&&>(fun)(*node);
       node_ptr = adjacent_node<direction>(static_cast<Tree&&>(tree), *node);
     }
+  }
+
+  template<class Tree>
+  static void swap_parent_child_(
+    Tree&& tree,
+    Node<Tree>& child,
+    Node<Tree>& parent,
+    Node_pointer<Tree> const& child_ptr,
+    Node_pointer<Tree> const& parent_ptr,
+    Node_pointer<Tree> const& grandparent_ptr)
+  {
+    using Node = Tree_algo::Node<Tree>;
+    using Node_pointer = Tree_algo::Node_pointer<Tree>;
+
+    Node* sibling(nullptr);
+    Node* grandparent(nullptr);
+    Node* left_grandchild(nullptr);
+    Node* right_grandchild(nullptr);
+    Node_pointer const left_grandchild_ptr(
+      static_cast<Tree&&>(tree).template child<Side::left>(child));
+    Node_pointer const right_grandchild_ptr(
+      static_cast<Tree&&>(tree).template child<Side::right>(child));
+    Node_pointer sibling_ptr, new_left_child_ptr, new_right_child_ptr;
+    Side const child_side(static_cast<Tree&&>(tree).side(child));
+    if(Side::left == child_side)
+    {
+      sibling_ptr =
+        static_cast<Tree&&>(tree).template child<Side::right>(parent);
+      new_right_child_ptr = sibling_ptr;
+      new_left_child_ptr = parent_ptr;
+    }
+    else
+    {
+      TREEXX_ASSERT(Side::right == child_side);
+      sibling_ptr =
+        static_cast<Tree&&>(tree).template child<Side::left>(parent);
+      new_left_child_ptr = sibling_ptr;
+      new_right_child_ptr = parent_ptr;
+    }
+    if(sibling_ptr)
+    {
+      sibling = static_cast<Tree&&>(tree).address(sibling_ptr);
+      TREEXX_ASSERT(sibling);
+    }
+    if(grandparent_ptr)
+    {
+      grandparent = static_cast<Tree&&>(tree).address(grandparent_ptr);
+      TREEXX_ASSERT(grandparent);
+    }
+    if(left_grandchild_ptr)
+    {
+      left_grandchild =
+        static_cast<Tree&&>(tree).address(left_grandchild_ptr);
+      TREEXX_ASSERT(left_grandchild);
+    }
+    if(right_grandchild_ptr)
+    {
+      right_grandchild =
+        static_cast<Tree&&>(tree).address(right_grandchild_ptr);
+      TREEXX_ASSERT(right_grandchild);
+    }
+
+    if(grandparent)
+    {
+      Side const parent_side(static_cast<Tree&&>(tree).side(parent));
+      set_child(
+        static_cast<Tree&&>(tree),
+        *grandparent, child_ptr, parent_side);
+    }
+
+    static_cast<Tree&&>(tree).set_parent(child, grandparent_ptr);
+    static_cast<Tree&&>(tree).template set_child<Side::left>(
+      child, new_left_child_ptr);
+    static_cast<Tree&&>(tree).template set_child<Side::right>(
+      child, new_right_child_ptr);
+    static_cast<Tree&&>(tree).set_parent(parent, child_ptr);
+    static_cast<Tree&&>(tree).template set_child<Side::left>(
+      parent, left_grandchild_ptr);
+    static_cast<Tree&&>(tree).template set_child<Side::right>(
+      parent, right_grandchild_ptr);
+
+    if(sibling)
+    {
+      static_cast<Tree&&>(tree).set_parent(*sibling, child_ptr);
+    }
+    if(left_grandchild)
+    {
+      static_cast<Tree&&>(tree).set_parent(*left_grandchild, parent_ptr);
+    }
+    if(right_grandchild)
+    {
+      static_cast<Tree&&>(tree).set_parent(*right_grandchild, parent_ptr);
+    }
+  }
+
+  template<Side side, class Tree>
+  static auto swapped_extreme_(
+    Tree&& tree,
+    Node_pointer<Tree> const& node_x_ptr,
+    Node_pointer<Tree> const& node_y_ptr) noexcept -> Node_pointer<Tree> const*
+  {
+    Node_pointer<Tree> const* node(nullptr);
+    Node_pointer<Tree> const extreme(
+      static_cast<Tree&&>(tree).template extreme<side>());
+    if(node_x_ptr == extreme)
+    {
+      node = ::std::addressof(node_y_ptr);
+    }
+    else if(node_y_ptr == extreme)
+    {
+      node = ::std::addressof(node_x_ptr);
+    }
+
+    return node;
   }
 };
 
