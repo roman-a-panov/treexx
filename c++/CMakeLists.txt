@@ -20,7 +20,7 @@ if(MSVC)
     CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL
     "${CMAKE_SHARED_LINKER_FLAGS_MINSIZEREL} ${LINKER_FLAGS_RELEASE}")
 else()
-  set(FLAGS "-Wall")
+  set(FLAGS "-Wall -Wunused-parameter")
   set(FLAGS_DEBUG "-g -O0 -fsanitize=address -fsanitize=undefined")
   set(FLAGS_RELEASE "-O3")
 

@@ -49,6 +49,7 @@ class Simple_tree_core_test
   using Compare_result_ = ::treexx::Compare_result;
   using Tree_algo_ = ::treexx::bin::avl::Tree_algo;
   using Util_ = ::test::treexx::bin::avl::util::Util;
+  using Random_util_ = ::test::util::random::Util;
   using Side_ = ::treexx::bin::Side;
 
   template<class... T>
@@ -62,16 +63,6 @@ class Simple_tree_core_test
 
   template<class Value>
   using Tree_core_ = ::test::treexx::bin::avl::Tree<Node_<Value>>;
-
-  template<bool, class = void>
-  struct Enable_if_
-  {};
-
-  template<class T>
-  struct Enable_if_<true, T>
-  {
-    using Type = T;
-  };
 
 protected:
   using Size = ::std::size_t;
@@ -299,6 +290,21 @@ protected:
       return false;
     }
 
+    template<class Fun>
+    void clear(Fun&& fun) noexcept
+    {
+      Tree_algo_::clear(
+        core_,
+        [&fun](Node_pointer const& node_ptr)
+        {
+          Unique_ptr_<Node> node(Core_::address(node_ptr));
+          static_cast<Fun&&>(fun)(node_ptr);
+          node.reset();
+        });
+
+      core_.xyz_reset();
+    }
+
     [[nodiscard]] static Node const* address(
       Node_const_pointer const& node_ptr) noexcept
     {
@@ -393,7 +399,13 @@ protected:
   template<class T, class Fun>
   static void gen_7548(Fun&& fun)
   {
-    ::test::util::random::Util::gen_7548<T>(static_cast<Fun&&>(fun));
+    Random_util_::gen_7548<T>(static_cast<Fun&&>(fun));
+  }
+
+  template<class Fun>
+  static void gen_56972304(Fun&& fun)
+  {
+    Random_util_::gen_56972304(static_cast<Fun&&>(fun));
   }
 };
 
@@ -1032,6 +1044,51 @@ TEST_CASE_METHOD(
     CHECK(vec.size() == tree.size());
     CHECK(erased);
   }
+}
+
+TEST_CASE_METHOD(
+  Simple_tree_core_test,
+  "Simple AVL tree core: clear",
+  "[tree++][treexx][bin][avl][algo][simple][clear]")
+{
+  using Value = Unt_64;
+  using Tree = Tree<Value>;
+
+  Size const count(GENERATE(
+    1u, 2u, 3u, 4u, 10u, 16u, 32u, 37u, 100u, 119u, 256u, 333u, 334u, 512u,
+    1000u, 1024u, 2048u, 2539u, 7548u, 10000u, 0xffffu, 0x10000u, 1000000u,
+    0x100000u, 3987379u, 5286432, 0x1000000u, 25901556u, 56972304u));
+
+  Tree tree;
+  Set<void const*> nodes;
+
+  gen_56972304(
+    [&tree, &nodes, count](Value const& x) -> bool
+    {
+      auto const ins_res(tree.try_insert(x));
+      auto const* const node_addr(Tree::address(ins_res.node_pointer));
+      bool const is_new_node = nodes.emplace(node_addr).second;
+
+      CHECK(node_addr);
+      CHECK(is_new_node);
+      CHECK(ins_res.inserted);
+      return tree.size() < count;
+    });
+
+  CHECK(count == tree.size());
+  tree.verify();
+
+  tree.clear(
+    [&nodes](auto const& node_ptr)
+    {
+      auto const nodes_erased(nodes.erase(Tree::address(node_ptr)));
+      CHECK(1u == nodes_erased);
+    });
+
+  CHECK(0u == tree.size());
+  CHECK(nodes.empty());
+  CHECK(tree.empty());
+  tree.verify();
 }
 
 } // namespace test::treexx::bin::avl

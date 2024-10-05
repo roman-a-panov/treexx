@@ -188,6 +188,14 @@ public:
     }
   }
 
+  void xyz_reset() noexcept
+  {
+    root_ = nullptr;
+    leftmost_ = nullptr;
+    rightmost_ = nullptr;
+    size_ = 0u;
+  }
+
   static void set_balance(Node& n, Balance const b) noexcept
   {
     return n.set_xyz_balance(b);

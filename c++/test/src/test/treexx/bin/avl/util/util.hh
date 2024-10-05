@@ -50,7 +50,7 @@ struct Util : ::test::treexx::util::Util
     Tree_size size = 0u;
     Tree_algo_::for_each(
       tree,
-      [&](auto const& node) noexcept
+      [&](auto const&) noexcept
       {
         ++size;
       });
