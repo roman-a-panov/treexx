@@ -34,13 +34,16 @@ struct Util
   using Compare_result = ::treexx::Compare_result;
 
   template<class X, class Y>
-  [[nodiscard]] static Compare_result compare(X const& x, Y const& y) noexcept
+  [[nodiscard]] static Compare_result compare(X&& x, Y&& y)
   {
-    if(x < y)
+    if(static_cast<X&&>(x) < static_cast<Y&&>(y))
     {
       return Compare_result::less;
     }
-    return y < x ? Compare_result::greater : Compare_result::equal;
+    return
+      static_cast<Y&&>(y) < static_cast<X&&>(x) ?
+      Compare_result::greater :
+      Compare_result::equal;
   }
 };
 

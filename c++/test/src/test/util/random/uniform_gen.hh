@@ -51,7 +51,7 @@ class Uniform_gen
 public:
   using Value = Remove_cv_ref_<T>;
 
-  explicit Uniform_gen(Value const& a, T const& b) :
+  explicit Uniform_gen(Value const& a, Value const& b) :
     dist_(a, b)
   {}
 
