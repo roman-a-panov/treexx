@@ -100,6 +100,11 @@ protected:
     using Key = K;
     using Value = V;
 
+    [[nodiscard]] bool empty() const noexcept
+    {
+      return !tree_.root();
+    }
+
     [[nodiscard]] Size const& size() const noexcept
     {
       return tree_.size;
@@ -171,6 +176,23 @@ protected:
       return ctrl.created;
     }
 
+    template<class T>
+    bool erase(T&& key)
+    {
+      Node_ptr_ const p(Tree_algo_::binary_search(
+        tree_,
+        [&key](Node_ const& n) -> Compare_result_
+        {
+          return Util_::compare(n.key, static_cast<T&&>(key));
+        }));
+      if(p)
+      {
+        Tree_algo_::erase(tree_, p);
+        return true;
+      }
+      return false;
+    }
+
   private:
     static Size constexpr invalid_node_index_ = Numeric_limits_<Size>::max();
 
@@ -191,6 +213,11 @@ protected:
       {
         idx_ = invalid_node_index_;
         return *this;
+      }
+
+      friend bool operator==(Node_ptr_ const& x, Node_ptr_ const& y) noexcept
+      {
+        return x.idx_ == y.idx_;
       }
 
     private:
@@ -241,6 +268,20 @@ protected:
       [[nodiscard]] Node_ptr_ const& root() const noexcept
       {
         return root_;
+      }
+
+      template<Side_ side>
+      [[nodiscard]] auto extreme() const noexcept ->
+        typename Enable_if_<Side_::left == side, Node_ptr_ const&>::Type
+      {
+        return leftmost_;
+      }
+
+      template<Side_ side>
+      [[nodiscard]] auto extreme() const noexcept ->
+        typename Enable_if_<Side_::right == side, Node_ptr_ const&>::Type
+      {
+        return rightmost_;
       }
 
       void set_root(Node_ptr_ const& p) noexcept
@@ -422,6 +463,17 @@ protected:
       });
   }
 
+  template<class M>
+  static void erase(M&& map)
+  {
+    Random_util_::gen_56972304(
+      [&map](auto const& key) -> bool
+      {
+        static_cast<M&&>(map).erase(key);
+        return !static_cast<M&&>(map).empty();
+      });
+  }
+
   template<class T>
   [[nodiscard]] static T make_value(T const& key) noexcept
   {
@@ -492,6 +544,25 @@ TEST_CASE_METHOD(
 
   cout << "\n";
   print_time("access");
+
+  tp.emplace();
+  erase(map);
+  ns_map = tp->ns();
+
+  tp.emplace();
+  erase(unordered_map);
+  ns_unordered_map = tp->ns();
+
+  tp.emplace();
+  erase(avl_map);
+  ns_avl_map = tp->ns();
+
+  CHECK(map.empty());
+  CHECK(unordered_map.empty());
+  CHECK(avl_map.empty());
+
+  cout << "\n";
+  print_time("erasure");
 }
 
 } // namespace test::treexx::bin::avl
