@@ -5,6 +5,7 @@ include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 set(
   TEST_SRCS
   src/tree++_test.cc
+  src/test/treexx/bin/avl/benchmark.cc
   src/test/treexx/bin/avl/index_tree_core_test.cc
   src/test/treexx/bin/avl/offset_tree_core_test.cc
   src/test/treexx/bin/avl/simple_tree_core_test.cc)
