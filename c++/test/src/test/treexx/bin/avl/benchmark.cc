@@ -65,10 +65,10 @@ class Benchmark
   using Remove_cv_ = typename ::std::remove_cv<T>::type;
 
   template<class T>
-  using Remove_ref_ = typename ::std::remove_reference<T>::type;
+  using Remove_reference_ = typename ::std::remove_reference<T>::type;
 
   template<class T>
-  using Remove_cv_ref_ = Remove_cv_<Remove_ref_<Remove_cv_<T>>>;
+  using Remove_cv_ref_ = Remove_cv_<Remove_reference_<Remove_cv_<T>>>;
 
   template<bool, class = void>
   struct Enable_if_
