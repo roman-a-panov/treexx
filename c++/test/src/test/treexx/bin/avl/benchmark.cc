@@ -34,6 +34,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include <catch.hpp>
 
+#include <test/treexx/util/util.hh>
 #include <test/util/time_probe.hh>
 #include <test/util/random/util.hh>
 #include <treexx/compare_result.hh>
@@ -48,6 +49,7 @@ class Benchmark
 {
   using Nullptr_ = ::std::nullptr_t;
   using Side_ = ::treexx::bin::Side;
+  using Util_ = ::test::treexx::util::Util;
   using Balance_ = ::treexx::bin::avl::Balance;
   using Random_util_ = ::test::util::random::Util;
   using Compare_result_ = ::treexx::Compare_result;
@@ -115,15 +117,7 @@ protected:
         tree_,
         [&key](Node_ const& n) -> Compare_result_
         {
-          if(n.key < static_cast<T&&>(key))
-          {
-            return Compare_result_::less;
-          }
-          if(static_cast<T&&>(key) < n.key)
-          {
-            return Compare_result_::greater;
-          }
-          return Compare_result_::equal;
+          return Util_::compare(n.key, static_cast<T&&>(key));
         }));
       return p ? ::std::addressof(tree_.nodes.data()[p.idx_].value) : nullptr;
     }
@@ -142,15 +136,7 @@ protected:
 
         [[nodiscard]] Compare_result_ operator()(Node_ const& n) const
         {
-          if(n.key < static_cast<T&&>(key_))
-          {
-            return Compare_result_::less;
-          }
-          if(static_cast<T&&>(key_) < n.key)
-          {
-            return Compare_result_::greater;
-          }
-          return Compare_result_::equal;
+          return Util_::compare(n.key, static_cast<T&&>(key_));
         }
 
         [[nodiscard]] Node_ptr_ operator()(
